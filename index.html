@@ -25,6 +25,8 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
 .messageBubble{padding:12px;border-radius:16px;max-width:70%;box-shadow:0 2px 8px rgba(0,0,0,0.1);word-wrap:break-word;}
 .messageMine{background:linear-gradient(180deg,#fff7e6,#fff5df);align-self:flex-end;border-bottom-right-radius:4px;}
 .messageOther{background:#ffffff;align-self:flex-start;border-bottom-left-radius:4px;}
+.senderName{font-size:12px;font-weight:600;margin-bottom:4px;color:#555;}
+.messageContent{font-size:14px;color:#111;word-wrap:break-word;}
 
 #inputBar{display:flex;padding:8px;gap:8px;border-top:1px solid #eee;}
 #msgInput{flex:1;padding:10px;border-radius:20px;border:1px solid #ccc;outline:none;}
@@ -90,7 +92,6 @@ const FIREBASE_CONFIG = {
 const app = initializeApp(FIREBASE_CONFIG);
 const db = getDatabase(app);
 const auth = getAuth(app);
-const adminEmail = "ckiprono211@gmail.com";
 
 // DOM Elements
 const loginBtn=document.getElementById('loginBtn');
@@ -150,23 +151,34 @@ function showMessages(){
     const div=document.createElement('div');
     div.className='messageBubble '+(msg.uid===auth.currentUser.uid?'messageMine':'messageOther');
 
+    // Sender name
+    const senderEl=document.createElement('div');
+    senderEl.className='senderName';
+    senderEl.textContent = msg.anonName || 'Anonymous';
+    div.appendChild(senderEl);
+
+    // Message content
+    const contentEl=document.createElement('div');
+    contentEl.className='messageContent';
+
     if(msg.type==='image' && msg.imageData){
       const img=document.createElement('img');
       img.src=msg.imageData;
       img.style.maxWidth='250px';
       img.style.borderRadius='12px';
-      div.appendChild(img);
+      contentEl.appendChild(img);
     } else if(msg.type==='audio' && msg.audioData){
       const audioEl=document.createElement('audio');
       audioEl.controls=true;
       audioEl.src=msg.audioData;
-      div.appendChild(audioEl);
+      contentEl.appendChild(audioEl);
     } else {
-      div.textContent=(msg.anonName||'Anonymous')+': '+(msg.text||'');
+      contentEl.textContent = msg.text || '';
     }
 
+    div.appendChild(contentEl);
     messagesList.appendChild(div);
-    messagesList.scrollTop=messagesList.scrollHeight;
+    messagesList.scrollTop = messagesList.scrollHeight;
   });
 }
 
