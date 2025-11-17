@@ -29,14 +29,14 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
 </div>
 
 <div id="messagesContainer">
-  <h3>Sent Messages</h3>
+  <h3>Recent Messages</h3>
   <div id="messagesList"></div>
   <button id="logoutBtn">Logout</button>
 </div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getDatabase, ref, push, onChildAdded, set } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+import { getDatabase, ref, push, onChildAdded, query, limitToLast } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
 const FIREBASE_CONFIG = {
@@ -84,7 +84,7 @@ async function register(){
 
 async function login(){
   try{
-    const userCredential=await signInWithEmailAndPassword(auth,emailInput.value,passwordInput.value);
+    await signInWithEmailAndPassword(auth,emailInput.value,passwordInput.value);
     showMessages();
   }catch(e){authStatus.textContent=e.message;}
 }
@@ -92,14 +92,12 @@ async function login(){
 function showMessages(){
   authContainer.style.display='none';
   messagesContainer.style.display='block';
-  const user=auth.currentUser;
-  messagesList.innerHTML=`<div class='messageBubble'>Welcome, ${user.displayName || 'Anonymous'}!</div>`;
-  const userMessagesRef=ref(db, `messages/${user.uid}`);
-  onChildAdded(userMessagesRef, snapshot => {
+  const messagesRef=query(ref(db,'messages'),limitToLast(50));
+  onChildAdded(messagesRef,snapshot=>{
     const msg=snapshot.val();
     const div=document.createElement('div');
     div.className='messageBubble';
-    div.textContent=msg.text || '[Media message]';
+    div.textContent=(msg.anonName||'Anonymous')+': '+(msg.text||'[Media message]');
     messagesList.appendChild(div);
   });
 }
