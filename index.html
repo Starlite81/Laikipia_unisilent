@@ -79,6 +79,7 @@
     background: linear-gradient(180deg, var(--gold-1), var(--gold-2));
     border:1px solid rgba(0,0,0,0.06); box-shadow: 0 8px 30px rgba(0,0,0,0.12);
     min-height:520px;
+    position: relative; /* needed for floating logout */
   }
 
   .chatHeader{display:flex;align-items:center;justify-content:space-between;padding:14px;background:transparent;border-bottom:1px solid rgba(0,0,0,0.03)}
@@ -88,17 +89,44 @@
 
   #messagesList{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:8px;background:transparent}
 
-  /* Message bubble styles (kept previous formatting exactly) */
+  /* Message bubble styles */
   .messageBubble{padding:12px;border-radius:16px;max-width:70%;box-shadow:0 2px 8px rgba(0,0,0,0.08);word-wrap:break-word;}
   .messageMine{background:linear-gradient(180deg,#fff7e6,#fff5df);align-self:flex-end;border-bottom-right-radius:4px;}
   .messageOther{background:#ffffff;align-self:flex-start;border-bottom-left-radius:4px;}
   .senderName{font-size:12px;font-weight:600;margin-bottom:4px;color:#555;}
   .messageContent{font-size:14px;color:#111;word-wrap:break-word;}
 
-  /* Input bar (golden / subtle purple accents) */
+  /* Input bar */
   .inputBar{display:flex;padding:12px;gap:8px;border-top:1px solid rgba(0,0,0,0.04);align-items:center;background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.55));}
   .inputBar input[type="text"]{flex:1;padding:10px;border-radius:20px;border:1px solid rgba(0,0,0,0.06);outline:none;background:white;color:#111}
   .btnRound{padding:10px;border-radius:50%;border:none;background:linear-gradient(90deg,var(--gold-accent),#b8860b);cursor:pointer;font-weight:700;color:#111}
+
+  /* Floating logout button */
+  .floatingLogoutBtn {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    cursor: pointer;
+    background: linear-gradient(90deg, var(--neon-purple), var(--neon-cyan));
+    color: white;
+    font-size: 22px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 14px rgba(0,0,0,0.25);
+    z-index: 9999;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+  }
+  .floatingLogoutBtn.hideBtn {
+    opacity: 0;
+    transform: scale(0.8);
+    pointer-events: none;
+  }
 
   /* file input hidden */
   input[type="file"]{display:none}
@@ -183,12 +211,14 @@
 
       <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
         <button class="btnGhost" id="clearMessagesBtn">Clear Messages</button>
-        <button class="btnGhost" id="logoutBtn" style="margin-left:auto">Logout</button>
       </div>
     </div>
 
     <!-- CHAT (golden theme) -->
     <div class="chatPanel" id="messagesContainer" style="display:none">
+      <!-- Floating Logout -->
+      <button id="logoutBtn" class="floatingLogoutBtn" title="Logout">🚪</button>
+
       <div class="chatHeader">
         <div style="display:flex;gap:12px;align-items:center">
           <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(90deg,var(--neon-purple),var(--neon-cyan));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff" id="miniAvatar">LC</div>
@@ -219,9 +249,7 @@ import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebas
 import { getDatabase, ref, push, onChildAdded, query, limitToLast, remove } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
-/* ===== YOUR FIREBASE CONFIG =====
-   Replace with your config if you want to use a different project.
-*/
+/* ===== YOUR FIREBASE CONFIG ===== */
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDxrcdSofjGYjHVihYIFJHOF0VjCQjsKN4",
   authDomain: "laikipia-49112.firebaseapp.com",
@@ -258,7 +286,7 @@ const miniAvatar=document.getElementById('miniAvatar');
 const logoImg=document.getElementById('logoImg');
 
 /* Optional: set logo image URL */
-logoImg.src = ""; // put path or URL if you have one
+logoImg.src = ""; 
 
 /* Anon name generator */
 function generateAnonName(){
@@ -296,7 +324,7 @@ function showMessages(){
   messagesContainer.style.display='flex';
 }
 
-/* REaltime listener for messages (keep old bubble formatting) */
+/* REaltime listener for messages */
 const messagesRef = query(ref(db,'messages'), limitToLast(100));
 onChildAdded(messagesRef, snapshot=>{
   const msg = snapshot.val();
@@ -404,8 +432,20 @@ voiceBtn.onclick = async () => {
   }
 };
 
-/* LOGOUT */
+/* LOGOUT - floating */
 logoutBtn.onclick = () => signOut(auth).then(()=>location.reload());
+
+/* optional: hide logout on scroll */
+let lastScroll = 0;
+messagesList.addEventListener('scroll', () => {
+  const now = messagesList.scrollTop;
+  if (now > lastScroll) {
+    logoutBtn.classList.add('hideBtn');
+  } else {
+    logoutBtn.classList.remove('hideBtn');
+  }
+  lastScroll = now;
+});
 
 /* CLEAR MESSAGES (admin) */
 clearMessagesBtn.onclick = async () => {
