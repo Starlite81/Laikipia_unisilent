@@ -22,6 +22,7 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
 #inputBar{display:flex;padding:8px;gap:8px;border-top:1px solid #eee;}
 #msgInput{flex:1;padding:10px;border-radius:20px;border:1px solid #ccc;outline:none;}
 #sendBtn{padding:10px 16px;border-radius:20px;background:linear-gradient(90deg,#D4AF37,#a78123);border:none;cursor:pointer;color:#111;font-weight:700;}
+#attachBtn,#voiceBtn{padding:10px;border-radius:50%;border:none;cursor:pointer;font-size:18px;background:linear-gradient(90deg,#D4AF37,#a78123);color:#111;}
 </style>
 </head>
 <body>
@@ -44,8 +45,11 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
   </div>
   <div id="messagesList"></div>
   <div id="inputBar">
+    <button id="attachBtn">📎</button>
+    <button id="voiceBtn">🎤</button>
     <input id="msgInput" type="text" placeholder="Type a message..." />
     <button id="sendBtn">Send</button>
+    <input type="file" id="fileInput" accept="image/*" style="display:none;" />
   </div>
 </div>
 
@@ -80,6 +84,12 @@ const messagesList=document.getElementById('messagesList');
 const logoutBtn=document.getElementById('logoutBtn');
 const msgInput=document.getElementById('msgInput');
 const sendBtn=document.getElementById('sendBtn');
+const attachBtn=document.getElementById('attachBtn');
+const fileInput=document.getElementById('fileInput');
+const voiceBtn=document.getElementById('voiceBtn');
+
+let mediaRecorder=null;
+let audioChunks=[];
 
 function generateAnonName(){
   const nameWords1=["Silver","Blue","Golden","Silent","Rapid","Misty","Shadow","Bright","Wild","Crimson"];
@@ -116,7 +126,22 @@ function showMessages(){
     const msg=snapshot.val();
     const div=document.createElement('div');
     div.className='messageBubble '+(msg.uid===auth.currentUser.uid?'messageMine':'messageOther');
-    div.textContent=(msg.anonName||'Anonymous')+': '+(msg.text||'[Media message]');
+
+    if(msg.type==='image' && msg.imageData){
+      const img=document.createElement('img');
+      img.src=msg.imageData;
+      img.style.maxWidth='250px';
+      img.style.borderRadius='12px';
+      div.appendChild(img);
+    } else if(msg.type==='audio' && msg.audioData){
+      const audioEl=document.createElement('audio');
+      audioEl.controls=true;
+      audioEl.src=msg.audioData;
+      div.appendChild(audioEl);
+    } else {
+      div.textContent=(msg.anonName||'Anonymous')+': '+(msg.text||'');
+    }
+
     messagesList.appendChild(div);
     messagesList.scrollTop=messagesList.scrollHeight;
   });
@@ -127,8 +152,44 @@ sendBtn.onclick=async()=>{
   if(!text) return;
   const user=auth.currentUser;
   const anonName=user.displayName||'Anonymous';
-  await push(ref(db,'messages'),{text,anonName,uid:user.uid});
+  await push(ref(db,'messages'),{text,anonName,uid:user.uid,type:'text'});
   msgInput.value='';
+};
+
+attachBtn.onclick=()=>fileInput.click();
+fileInput.onchange=()=>{
+  const file=fileInput.files[0];
+  if(!file) return;
+  const reader=new FileReader();
+  reader.onload=async()=>{
+    const user=auth.currentUser;
+    await push(ref(db,'messages'),{uid:user.uid,anonName:user.displayName||'Anonymous',type:'image',imageData:reader.result});
+    fileInput.value='';
+  };
+  reader.readAsDataURL(file);
+};
+
+voiceBtn.onclick=async()=>{
+  if(mediaRecorder && mediaRecorder.state==='recording'){
+    mediaRecorder.stop();
+    voiceBtn.textContent='🎤';
+  } else {
+    const stream=await navigator.mediaDevices.getUserMedia({audio:true});
+    mediaRecorder=new MediaRecorder(stream);
+    audioChunks=[];
+    mediaRecorder.ondataavailable=e=>audioChunks.push(e.data);
+    mediaRecorder.onstop=async()=>{
+      const blob=new Blob(audioChunks,{type:'audio/mp3'});
+      const reader=new FileReader();
+      reader.onload=async()=>{
+        const user=auth.currentUser;
+        await push(ref(db,'messages'),{uid:user.uid,anonName:user.displayName||'Anonymous',type:'audio',audioData:reader.result});
+      };
+      reader.readAsDataURL(blob);
+    };
+    mediaRecorder.start();
+    voiceBtn.textContent='⏹️';
+  }
 };
 
 loginBtn.onclick=login;
