@@ -42,6 +42,39 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
 #attachBtn,#voiceBtn{padding:10px;border-radius:50%;border:none;cursor:pointer;font-size:18px;background:linear-gradient(90deg,#D4AF37,#a78123);color:#111;}
   /* Override: shrink online users panel */
   #online-users-panel { width: 150px !important; }
+  /* Floating online users button */
+  #online-users-toggle {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    background: #ffcc00;
+    width: 55px;
+    height: 55px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+    z-index: 9999;
+  }
+
+  /* Floating panel */
+  #online-users-panel {
+    position: fixed !important;
+    bottom: 85px;
+    right: 20px;
+    width: 220px !important;
+    max-height: 300px;
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.25);
+    padding: 10px;
+    overflow-y: auto;
+    display: none;
+    z-index: 9999;
+  }
 </style>
 </head>
 <body>
@@ -337,5 +370,13 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
+  <div id="online-users-toggle">👥</div>
+  <script>
+    const toggleBtn = document.getElementById('online-users-toggle');
+    const panel = document.getElementById('online-users-panel');
+    toggleBtn.addEventListener('click', () => {
+      panel.style.display = panel.style.display === 'none' ? 'block' : 'none';
+    });
+  </script>
 </body>
 </html>
