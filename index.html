@@ -55,7 +55,7 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getDatabase, ref, push, onChildAdded, query, limitToLast, remove, onValue } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+import { getDatabase, ref, push, onChildAdded, query, limitToLast, remove, onValue, set } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
 const FIREBASE_CONFIG = {
@@ -98,6 +98,18 @@ function generateAnonName(){
   return nameWords1[Math.floor(Math.random()*nameWords1.length)] + ' ' + nameWords2[Math.floor(Math.random()*nameWords2.length)];
 }
 
+async function sendWelcomeMessage(){
+  const welcomeText=`\n📢 Welcome to Laikipia Anonymous Chatroom!\n\nHello! 👋 This is a fun and safe place to chat anonymously.\n\n- You get a random anonymous name.\n- Send text messages, images, and voice notes!\n- Everyone sees the latest messages in real time.\n\nInvite your friends and enjoy the chat! ❤️`;
+
+  await push(ref(db,'messages'),{
+    text:welcomeText.trim(),
+    type:'text',
+    anonName:'System',
+    system:true,
+    ts:Date.now()
+  });
+}
+
 async function register(){
   try{
     const userCredential=await createUserWithEmailAndPassword(auth,emailInput.value,passwordInput.value);
@@ -105,7 +117,7 @@ async function register(){
     const anonName=generateAnonName();
     const isAdmin=user.email===adminEmail;
     await updateProfile(user,{displayName:anonName});
-    await push(ref(db,`users/${user.uid}`),{email:isAdmin?user.email:null,anonName,isAdmin});
+    await set(ref(db,`users/${user.uid}`),{anonName,isAdmin,seenWelcome:false});
     showMessages();
   }catch(e){authStatus.textContent=e.message;}
 }
@@ -152,8 +164,7 @@ sendBtn.onclick=async()=>{
   const text=msgInput.value.trim();
   if(!text) return;
   const user=auth.currentUser;
-  const anonName=user.displayName||'Anonymous';
-  await push(ref(db,'messages'),{text,anonName,uid:user.uid,type:'text'});
+  await push(ref(db,'messages'),{text,anonName:user.displayName||'Anonymous',uid:user.uid,type:'text'});
   msgInput.value='';
 };
 
@@ -212,6 +223,10 @@ onAuthStateChanged(auth,user=>{
       const data = snapshot.val();
       if(data?.isAdmin){
         resetBtn.style.display = 'inline-block';
+      }
+      if(!data?.seenWelcome){
+        sendWelcomeMessage();
+        set(ref(db, `users/${user.uid}/seenWelcome`), true);
       }
     });
   }
