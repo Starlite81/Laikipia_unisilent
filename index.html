@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Laikipia Anonymous Chatroom</title>
 
-<!-- PWA Manifest -->
 <link rel="manifest" href="manifest.json">
 <meta name="theme-color" content="#D4AF37">
 
@@ -16,18 +15,27 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
 #authContainer input{width:100%;padding:12px;margin:8px 0;border-radius:12px;border:1px solid #ccc;font-size:14px;}
 #authContainer button{width:48%;padding:12px;margin:12px 1%;border:none;border-radius:12px;font-weight:700;cursor:pointer;color:#111;background:linear-gradient(90deg,#D4AF37,#a78123);}
 #authStatus{color:red;margin-top:12px;font-size:14px}
-#messagesContainer{display:none;width:100%;max-width:400px;flex-direction:column;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.15);background:white;}
+#messagesContainer{display:none;width:100%;max-width:500px;flex-direction:column;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.15);background:white;}
 #logoDiv{background:linear-gradient(90deg,#D4AF37,#a78123);padding:16px;text-align:center;color:#111;font-weight:700;font-size:20px;}
 #chatHeader{display:flex;justify-content:flex-end;padding:8px 16px;}
 #logoutBtn{padding:8px 12px;border-radius:8px;border:none;background:white;cursor:pointer;font-weight:700;color:#111;}
 #messagesList{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;}
-.messageBubble{padding:12px;border-radius:16px;max-width:70%;box-shadow:0 2px 8px rgba(0,0,0,0.1);word-wrap:break-word;}
+.messageBubble{padding:12px;border-radius:16px;max-width:70%;box-shadow:0 2px 8px rgba(0,0,0,0.1);word-wrap:break-word;position:relative;}
 .messageMine{background:linear-gradient(180deg,#fff7e6,#fff5df);align-self:flex-end;border-bottom-right-radius:4px;}
 .messageOther{background:#ffffff;align-self:flex-start;border-bottom-left-radius:4px;}
+.reactionBar{display:flex;gap:8px;margin-top:6px;font-size:14px;}
+.reactionBtn{cursor:pointer;user-select:none;}
+.dmBtn{position:absolute;top:4px;right:4px;font-size:12px;background:#D4AF37;color:#111;padding:2px 6px;border-radius:8px;cursor:pointer;}
 #inputBar{display:flex;padding:8px;gap:8px;border-top:1px solid #eee;}
 #msgInput{flex:1;padding:10px;border-radius:20px;border:1px solid #ccc;outline:none;}
 #sendBtn{padding:10px 16px;border-radius:20px;background:linear-gradient(90deg,#D4AF37,#a78123);border:none;cursor:pointer;color:#111;font-weight:700;}
 #attachBtn,#voiceBtn{padding:10px;border-radius:50%;border:none;cursor:pointer;font-size:18px;background:linear-gradient(90deg,#D4AF37,#a78123);color:#111;}
+#privateChatContainer{display:none;flex-direction:column;width:400px;background:white;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.15);position:fixed;top:50px;right:20px;max-height:80vh;}
+#privateChatHeader{display:flex;justify-content:space-between;padding:8px 16px;background:#D4AF37;border-top-left-radius:16px;border-top-right-radius:16px;color:#111;font-weight:700;}
+#privateMessagesList{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;}
+#privateInputBar{display:flex;padding:8px;gap:8px;border-top:1px solid #eee;}
+#privateMsgInput{flex:1;padding:10px;border-radius:20px;border:1px solid #ccc;outline:none;}
+#privateSendBtn{padding:10px 16px;border-radius:20px;background:#a78123;border:none;cursor:pointer;color:#111;font-weight:700;}
 </style>
 </head>
 <body>
@@ -58,9 +66,21 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
   </div>
 </div>
 
+<div id="privateChatContainer">
+  <div id="privateChatHeader">
+    <span>Private Chat</span>
+    <button id="closePrivateBtn">✖</button>
+  </div>
+  <div id="privateMessagesList"></div>
+  <div id="privateInputBar">
+    <input id="privateMsgInput" type="text" placeholder="Type a message..." />
+    <button id="privateSendBtn">Send</button>
+  </div>
+</div>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getDatabase, ref, push, onChildAdded, query, limitToLast } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+import { getDatabase, ref, push, onChildAdded, query, limitToLast, get, set } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
 const FIREBASE_CONFIG = {
@@ -78,6 +98,7 @@ const db = getDatabase(app);
 const auth = getAuth(app);
 const adminEmail = "ckiprono211@gmail.com";
 
+// DOM Elements
 const loginBtn=document.getElementById('loginBtn');
 const registerBtn=document.getElementById('registerBtn');
 const emailInput=document.getElementById('emailInput');
@@ -93,8 +114,15 @@ const attachBtn=document.getElementById('attachBtn');
 const fileInput=document.getElementById('fileInput');
 const voiceBtn=document.getElementById('voiceBtn');
 
+const privateChatContainer=document.getElementById('privateChatContainer');
+const privateMessagesList=document.getElementById('privateMessagesList');
+const privateMsgInput=document.getElementById('privateMsgInput');
+const privateSendBtn=document.getElementById('privateSendBtn');
+const closePrivateBtn=document.getElementById('closePrivateBtn');
+
 let mediaRecorder=null;
 let audioChunks=[];
+let currentPrivateUid=null;
 
 function generateAnonName(){
   const nameWords1=["Silver","Blue","Golden","Silent","Rapid","Misty","Shadow","Bright","Wild","Crimson"];
@@ -102,6 +130,7 @@ function generateAnonName(){
   return nameWords1[Math.floor(Math.random()*nameWords1.length)] + ' ' + nameWords2[Math.floor(Math.random()*nameWords2.length)];
 }
 
+// --- Auth ---
 async function register(){
   try{
     const userCredential=await createUserWithEmailAndPassword(auth,emailInput.value,passwordInput.value);
@@ -132,6 +161,7 @@ function showMessages(){
     const div=document.createElement('div');
     div.className='messageBubble '+(msg.uid===auth.currentUser.uid?'messageMine':'messageOther');
 
+    // Add message content
     if(msg.type==='image' && msg.imageData){
       const img=document.createElement('img');
       img.src=msg.imageData;
@@ -147,11 +177,50 @@ function showMessages(){
       div.textContent=(msg.anonName||'Anonymous')+': '+(msg.text||'');
     }
 
+    // --- Reactions ---
+    const reactionBar=document.createElement('div');
+    reactionBar.className='reactionBar';
+    ['👍','❤️','😂'].forEach(async emoji=>{
+      const span=document.createElement('span');
+      span.className='reactionBtn';
+      span.textContent=emoji + ' ';
+      span.onclick=()=>toggleReaction(snapshot.key,emoji);
+      // Display count
+      const reactions = msg.reactions && msg.reactions[emoji] ? msg.reactions[emoji].length : 0;
+      span.textContent = emoji + ' ' + reactions;
+      reactionBar.appendChild(span);
+    });
+    div.appendChild(reactionBar);
+
+    // --- DM button for other users ---
+    if(msg.uid !== auth.currentUser.uid){
+      const dmBtn=document.createElement('span');
+      dmBtn.className='dmBtn';
+      dmBtn.textContent='DM';
+      dmBtn.onclick=()=>openPrivateChat(msg.uid);
+      div.appendChild(dmBtn);
+    }
+
     messagesList.appendChild(div);
     messagesList.scrollTop=messagesList.scrollHeight;
   });
 }
 
+async function toggleReaction(messageId, emoji){
+  const userId = auth.currentUser.uid;
+  const reactionsRef = ref(db, `messages/${messageId}/reactions/${emoji}`);
+  const snapshot = await get(reactionsRef);
+  let users = snapshot.val() || [];
+
+  if(users.includes(userId)){
+    users = users.filter(u => u !== userId);
+  } else {
+    users.push(userId);
+  }
+  await set(reactionsRef, users);
+}
+
+// --- Send Messages ---
 sendBtn.onclick=async()=>{
   const text=msgInput.value.trim();
   if(!text) return;
@@ -197,10 +266,50 @@ voiceBtn.onclick=async()=>{
   }
 };
 
+// --- Private Chat Functions ---
+function openPrivateChat(otherUid){
+  privateChatContainer.style.display='flex';
+  currentPrivateUid = otherUid;
+  privateMessagesList.innerHTML='';
+  loadPrivateMessages();
+}
+
+closePrivateBtn.onclick=()=>{ privateChatContainer.style.display='none'; currentPrivateUid=null; };
+
+async function loadPrivateMessages(){
+  if(!currentPrivateUid) return;
+  const uids=[auth.currentUser.uid,currentPrivateUid].sort();
+  const chatId = uids.join('_');
+  const messagesRef=query(ref(db,`privateMessages/${chatId}`),limitToLast(50));
+  onChildAdded(messagesRef,snapshot=>{
+    const msg=snapshot.val();
+    const div=document.createElement('div');
+    div.className='messageBubble '+(msg.uid===auth.currentUser.uid?'messageMine':'messageOther');
+    div.textContent=(msg.anonName||'Anonymous')+': '+(msg.text||'');
+    privateMessagesList.appendChild(div);
+    privateMessagesList.scrollTop=privateMessagesList.scrollHeight;
+  });
+}
+
+privateSendBtn.onclick=async()=>{
+  const text=privateMsgInput.value.trim();
+  if(!text || !currentPrivateUid) return;
+  const uids=[auth.currentUser.uid,currentPrivateUid].sort();
+  const chatId = uids.join('_');
+  await push(ref(db,`privateMessages/${chatId}`),{
+    uid: auth.currentUser.uid,
+    anonName: auth.currentUser.displayName||'Anonymous',
+    type:'text',
+    text,
+    timestamp: Date.now()
+  });
+  privateMsgInput.value='';
+};
+
+// --- Auth Event Handlers ---
 loginBtn.onclick=login;
 registerBtn.onclick=register;
 logoutBtn.onclick=()=>{ signOut(auth).then(()=>{ location.reload(); }); };
-
 onAuthStateChanged(auth,user=>{ if(user){ showMessages(); } });
 
 // --- PWA Service Worker Registration ---
