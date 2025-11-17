@@ -13,310 +13,227 @@
 
 <style>
   :root{
-    --bg-1:#06040a;
-    --bg-2:#0f0520;
-    --glass: rgba(255,255,255,0.04);
+    --dark-1:#06040a;
+    --dark-2:#10051a;
+    --neon-purple:#8b5cf6;
+    --neon-cyan:#06b6d4;
+    --text-main:#e8e8f0;
+    --muted:#9aa0b4;
+    --gold-1:#fff8ef;
+    --gold-2:#fff0d6;
+    --gold-accent:#d4af37;
     --card-border: rgba(255,255,255,0.06);
-    --accent-1: #8b5cf6; /* purple */
-    --accent-2: #06b6d4; /* cyan */
-    --accent-3: #ff6b6b; /* warm */
-    --text-main: #e8e8f0;
-    --muted: #9aa0b4;
-    --glass-2: rgba(255,255,255,0.02);
   }
 
   *{box-sizing:border-box}
-  html,body{height:100%;margin:0;font-family:'Inter',system-ui,Arial,sans-serif;background:
-    radial-gradient(800px 400px at 10% 10%, rgba(139,92,246,0.07), transparent 10%),
-    linear-gradient(180deg,var(--bg-1),var(--bg-2)); color:var(--text-main); -webkit-font-smoothing:antialiased;}
+  body{margin:0;font-family:'Inter',system-ui,Arial,sans-serif;background:
+    radial-gradient(600px 300px at 10% 6%, rgba(139,92,246,0.06), transparent 8%),
+    linear-gradient(180deg,var(--dark-1),var(--dark-2)); color:var(--text-main); -webkit-font-smoothing:antialiased;
+    min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:28px 12px;}
 
-  /* center container */
-  .page{
-    min-height:100vh;
-    display:flex;
-    align-items:flex-start;
-    justify-content:center;
-    padding:28px 16px;
-  }
+  .container{width:100%;max-width:980px;display:grid;grid-template-columns:1fr 420px;gap:20px}
 
-  /* app shell */
-  .app{
-    width:100%;
-    max-width:980px;
-    display:grid;
-    grid-template-columns: 1fr 420px;
-    gap:20px;
+  /* LEFT - landing (dark neon) */
+  .leftPanel{
+    border-radius:16px;padding:28px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+    border:1px solid var(--card-border);box-shadow:0 12px 40px rgba(2,2,8,0.6);
   }
+  .logoBox{width:92px;height:92px;border-radius:18px;background:linear-gradient(135deg,var(--neon-purple),#4f46e5);
+    display:flex;align-items:center;justify-content:center;margin:0 auto 14px;box-shadow:0 10px 30px rgba(139,92,246,0.12)}
+  .logoBox img{width:72%;height:72%;object-fit:contain;border-radius:8px}
+  .mainTitle{font-size:40px;font-weight:800;text-align:center;margin:6px 0;
+    background:linear-gradient(90deg,var(--neon-purple),var(--neon-cyan));
+    -webkit-background-clip:text;background-clip:text;color:transparent;}
+  .subtitle{text-align:center;color:var(--muted);max-width:740px;margin:10px auto 18px;font-size:15px}
+  .subtitle strong{color:var(--text-main)}
 
-  /* left - landing */
-  .panel{
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
-    border-radius:16px;
-    padding:24px;
-    border:1px solid var(--card-border);
-    box-shadow: 0 10px 30px rgba(2,2,8,0.6);
-    overflow:hidden;
-  }
-
-  .hero{
-    display:flex;
-    flex-direction:column;
-    align-items:center;
-    gap:14px;
-    text-align:center;
-    padding:28px 12px;
-  }
-  .logoWrap{
-    width:96px;height:96px;border-radius:18px;background:linear-gradient(135deg,var(--accent-1),#4f46e5);
-    display:flex;align-items:center;justify-content:center;box-shadow:0 8px 32px rgba(139,92,246,0.18);
-    border:1px solid rgba(255,255,255,0.03);
-  }
-  .logoWrap img{width:78%;height:78%;object-fit:contain;border-radius:6px}
-  .title{
-    font-size:40px;
-    font-weight:800;
-    line-height:1;
-    background:linear-gradient(90deg,var(--accent-1),var(--accent-2));
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-    text-shadow:0 6px 28px rgba(139,92,246,0.08);
-  }
-  .sub{
-    color:var(--muted); font-size:15px; max-width:720px;
-  }
-  .sub strong{color:var(--text-main)}
-  .bigCard{
-    margin-top:18px;
-    width:100%;
-    background: linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));
-    border-radius:14px;padding:18px;border:1px solid var(--card-border);
-    display:flex;flex-direction:column;gap:12px;
-  }
-
-  .feature{
-    display:flex;align-items:center;justify-content:space-between;padding:18px;border-radius:12px;
-    background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
-    border:1px solid rgba(255,255,255,0.02);
-  }
-  .feature .left{display:flex;gap:14px;align-items:center}
-  .iconBox{
-    width:44px;height:44px;border-radius:8px;display:flex;align-items:center;justify-content:center;
-    background: linear-gradient(90deg, rgba(139,92,246,0.12), rgba(6,182,212,0.06));
-    border:1px solid rgba(255,255,255,0.02);
-    font-size:20px;
-  }
+  .features{display:flex;flex-direction:column;gap:10px;margin-top:16px}
+  .featureCard{display:flex;justify-content:space-between;align-items:center;padding:14px;border-radius:12px;
+    background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));border:1px solid rgba(255,255,255,0.02)}
+  .featureLeft{display:flex;gap:12px;align-items:center}
+  .featureIcon{width:44px;height:44px;border-radius:10px;display:flex;align-items:center;justify-content:center;
+    background:linear-gradient(90deg, rgba(139,92,246,0.12), rgba(6,182,212,0.06));font-size:18px}
   .featureLabel{font-weight:700}
-  .featureSub{color:var(--muted);font-size:13px;margin-top:4px}
+  .featureSub{font-size:13px;color:var(--muted)}
 
-  /* right - auth & chat */
-  .side{
-    display:flex;flex-direction:column;gap:14px;
-  }
+  /* RIGHT - auth & chat column */
+  .rightCol{display:flex;flex-direction:column;gap:14px}
 
-  .authCard{
-    padding:18px;border-radius:14px;
-    background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.03));
-    border:1px solid var(--card-border);
-  }
-  .authTitle{
-    font-weight:800;font-size:20px;margin-bottom:6px;
-    background:linear-gradient(90deg,var(--accent-1),var(--accent-2));
-    -webkit-background-clip:text;background-clip:text;color:transparent;
-  }
-  .authSmall{color:var(--muted);font-size:13px;margin-bottom:12px}
+  /* AUTH (dark) */
+  .authCard{padding:18px;border-radius:14px;background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.03));border:1px solid var(--card-border)}
+  .notify{display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);
+    background: linear-gradient(90deg, rgba(139,92,246,0.06), rgba(6,182,212,0.02)); margin-bottom:12px;}
+  .authTitle{font-weight:800;font-size:18px;margin-bottom:6px;background:linear-gradient(90deg,var(--neon-purple),var(--neon-cyan));
+    -webkit-background-clip:text;background-clip:text;color:transparent}
+  .authSmall{color:var(--muted);font-size:13px;margin-bottom:6px}
+  .field{display:flex;flex-direction:column;gap:8px;margin-bottom:8px}
+  .field input{padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text-main)}
+  .rowBtns{display:flex;gap:10px;margin-top:6px}
+  .btnPrimary{flex:1;padding:12px;border-radius:12px;border:none;background:linear-gradient(90deg,var(--neon-purple),var(--neon-cyan));color:#06102a;font-weight:800;cursor:pointer}
+  .btnGhost{flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text-main);font-weight:700;cursor:pointer}
+  .statusMsg{color:#ffb4b4;font-size:13px;min-height:18px;margin-top:8px}
 
-  .field{display:flex;flex-direction:column;gap:8px;margin-bottom:10px}
-  input[type="email"], input[type="password"], input[type="text"]{
-    padding:12px 14px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);
-    background:transparent;color:var(--text-main);outline:none;font-size:14px;
-  }
-  .rowBtns{display:flex;gap:10px}
-  button.cta{
-    flex:1;padding:12px;border-radius:12px;border:none;cursor:pointer;font-weight:800;
-    background: linear-gradient(90deg,var(--accent-1),var(--accent-2)); color:#06102a;
-    box-shadow:0 8px 24px rgba(6,6,32,0.6);
-  }
-  button.ghost{
-    flex:1;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.04);
-    background:transparent;color:var(--text-main);font-weight:700;cursor:pointer;
+  /* Chat container (messages area) - GOLDEN THEME background (option B) */
+  .chatPanel{
+    display:flex;flex-direction:column;border-radius:16px;padding:0; overflow:hidden;
+    background: linear-gradient(180deg, var(--gold-1), var(--gold-2));
+    border:1px solid rgba(0,0,0,0.06); box-shadow: 0 8px 30px rgba(0,0,0,0.12);
+    min-height:520px;
   }
 
-  .statusMsg{color:#ffb4b4;font-size:13px;min-height:18px}
+  .chatHeader{display:flex;align-items:center;justify-content:space-between;padding:14px;background:transparent;border-bottom:1px solid rgba(0,0,0,0.03)}
+  .chatTitle{font-weight:800;color:#1b1b1b}
+  .chatSub{color:#4a4a4a;font-size:13px}
+  .onlineCount{font-size:13px;color:#666}
 
-  /* messages container */
-  .messagesWrap{
-    display:flex;flex-direction:column;height:60vh;border-radius:14px;padding:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.01));
-    border:1px solid var(--card-border); overflow:hidden;
-  }
-  .chatHeader{
-    display:flex;align-items:center;justify-content:space-between;padding:8px 6px;border-bottom:1px solid rgba(255,255,255,0.02);
-  }
-  .chatHeader .hleft{display:flex;align-items:center;gap:12px}
-  .avatarSmall{
-    width:44px;height:44px;border-radius:10px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));
-    display:flex;align-items:center;justify-content:center;font-weight:800;
-  }
-  .chatTitle{font-weight:800}
-  .chatSub{color:var(--muted);font-size:13px}
+  #messagesList{flex:1;overflow:auto;padding:16px;display:flex;flex-direction:column;gap:8px;background:transparent}
 
-  .msgs{flex:1;overflow:auto;padding:14px;display:flex;flex-direction:column;gap:12px}
-  .msg{
-    max-width:78%;padding:12px;border-radius:12px;background:linear-gradient(180deg, rgba(255,255,255,0.01), rgba(255,255,255,0.00));
-    border:1px solid rgba(255,255,255,0.02);box-shadow:0 6px 18px rgba(2,2,8,0.45);word-wrap:break-word;
-  }
-  .mine{align-self:flex-end;background:linear-gradient(180deg, rgba(139,92,246,0.12), rgba(6,182,212,0.06));border:1px solid rgba(255,255,255,0.03)}
-  .sender{font-size:12px;font-weight:700;color:rgba(255,255,255,0.85);margin-bottom:6px}
-  .content{font-size:15px;color:var(--text-main)}
+  /* Message bubble styles (kept previous formatting exactly) */
+  .messageBubble{padding:12px;border-radius:16px;max-width:70%;box-shadow:0 2px 8px rgba(0,0,0,0.08);word-wrap:break-word;}
+  .messageMine{background:linear-gradient(180deg,#fff7e6,#fff5df);align-self:flex-end;border-bottom-right-radius:4px;}
+  .messageOther{background:#ffffff;align-self:flex-start;border-bottom-left-radius:4px;}
+  .senderName{font-size:12px;font-weight:600;margin-bottom:4px;color:#555;}
+  .messageContent{font-size:14px;color:#111;word-wrap:break-word;}
 
-  .inputBar{display:flex;gap:8px;padding:12px;border-top:1px solid rgba(255,255,255,0.02)}
-  .inputBar input[type="text"]{flex:1;padding:10px;border-radius:999px;border:1px solid rgba(255,255,255,0.04);background:transparent;color:var(--text-main)}
-  .btnCircle{width:44px;height:44px;border-radius:50%;display:inline-flex;align-items:center;justify-content:center;border:none;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));cursor:pointer;font-size:18px;font-weight:800;color:#06102a}
+  /* Input bar (golden / subtle purple accents) */
+  .inputBar{display:flex;padding:12px;gap:8px;border-top:1px solid rgba(0,0,0,0.04);align-items:center;background:linear-gradient(180deg, rgba(255,255,255,0.6), rgba(255,255,255,0.55));}
+  .inputBar input[type="text"]{flex:1;padding:10px;border-radius:20px;border:1px solid rgba(0,0,0,0.06);outline:none;background:white;color:#111}
+  .btnRound{padding:10px;border-radius:50%;border:none;background:linear-gradient(90deg,var(--gold-accent),#b8860b);cursor:pointer;font-weight:700;color:#111}
 
-  .smallMuted{font-size:12px;color:var(--muted);text-align:center;padding:8px}
+  /* file input hidden */
+  input[type="file"]{display:none}
 
-  /* notification banner */
-  .notify{
-    display:flex;align-items:center;justify-content:space-between;padding:12px;border-radius:12px;border:1px solid rgba(255,255,255,0.03);
-    background: linear-gradient(90deg, rgba(139,92,246,0.06), rgba(6,182,212,0.02)); margin-bottom:12px;
-  }
-  .enableBtn{padding:8px 12px;border-radius:10px;border:none;background:#04102a;color:var(--accent-2);font-weight:800;cursor:pointer}
+  /* small helper */
+  .smallMuted{font-size:12px;color:#5b5b5b;text-align:center;padding:8px}
 
-  /* responsive */
   @media (max-width:980px){
-    .app{grid-template-columns: 1fr; padding-bottom:40px}
-    .side{order:2}
+    .container{grid-template-columns:1fr; padding-bottom:40px}
   }
 
 </style>
 </head>
 <body>
-  <div class="page">
-    <div class="app">
-      <!-- LEFT - landing/branding -->
-      <div class="panel">
-        <div class="hero">
-          <div class="logoWrap"><img src="" alt="logo" id="logoImg" /></div>
-          <div class="title">LAIKIPIA COMRADE</div>
-          <div class="sub">
-            Send <span style="color:var(--accent-1);font-weight:800">anonymous messages</span> to your fellow comrades.
-            <div style="height:6px"></div>
-            Your identity is <span style="color:var(--accent-2);font-weight:800">💯 percent hidden</span>.
-          </div>
-        </div>
 
-        <div class="bigCard">
-          <div style="display:flex;flex-direction:column;gap:12px">
-            <div class="feature">
-              <div class="left">
-                <div class="iconBox">💬</div>
-                <div>
-                  <div class="featureLabel">100% Anonymous</div>
-                  <div class="featureSub">No usernames or emails shown with messages</div>
-                </div>
-              </div>
-              <div style="opacity:0.9">→</div>
-            </div>
-
-            <div class="feature">
-              <div class="left">
-                <div class="iconBox">🏫</div>
-                <div>
-                  <div class="featureLabel">University Community</div>
-                  <div class="featureSub">Built for your campus, keep it respectful</div>
-                </div>
-              </div>
-              <div style="opacity:0.9">→</div>
-            </div>
-
-            <div class="feature">
-              <div class="left">
-                <div class="iconBox">🔒</div>
-                <div>
-                  <div class="featureLabel">Secure</div>
-                  <div class="featureSub">Realtime messages via Firebase</div>
-                </div>
-              </div>
-              <div style="opacity:0.9">→</div>
-            </div>
-          </div>
-
-          <div class="smallMuted">Tip: Use the attach button to send images or the mic for voice messages.</div>
-        </div>
-
+<div class="container">
+  <!-- LEFT: dark neon landing -->
+  <div class="leftPanel">
+    <div style="text-align:center">
+      <div class="logoBox"><img id="logoImg" src="" alt="logo" /></div>
+      <div class="mainTitle">LAIKIPIA COMRADE</div>
+      <div class="subtitle">
+        Send <strong style="color:var(--neon-purple)">anonymous messages</strong> to your fellow comrades.
+        <div style="height:6px"></div>
+        Your identity is <strong style="color:var(--neon-cyan)">💯 percent hidden</strong>.
       </div>
-
-      <!-- RIGHT - auth & chat -->
-      <div class="side">
-        <div class="panel authCard" id="authContainer">
-          <div class="notify" style="margin-bottom:12px">
-            <div style="display:flex;gap:10px;align-items:center">
-              <div style="width:38px;height:38px;border-radius:9px;background:linear-gradient(90deg,var(--accent-1),var(--accent-2));display:flex;align-items:center;justify-content:center">🔔</div>
-              <div style="font-weight:700">Enable Notifications</div>
-            </div>
-            <button class="enableBtn" id="enableNotifBtn">Enable</button>
-          </div>
-
-          <div class="authTitle">LAIKIPIA COMRADE</div>
-          <div class="authSmall">Send anonymous message to your fellow comrades.</div>
-          <div class="authSmall" style="margin-bottom:8px"><strong>Your identity is 💯 percent hidden</strong></div>
-
-          <div class="field">
-            <input id="emailInput" type="email" placeholder="Email" autocomplete="username" />
-            <input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password" />
-          </div>
-
-          <div class="rowBtns">
-            <button class="cta" id="loginBtn">Login</button>
-            <button class="ghost" id="registerBtn">Register</button>
-          </div>
-
-          <div style="height:12px"></div>
-          <div class="statusMsg" id="authStatus"></div>
-
-          <div style="height:10px"></div>
-          <div style="display:flex;gap:8px;align-items:center">
-            <button class="ghost" id="clearMessagesBtn">Clear Messages</button>
-            <button class="ghost" id="logoutBtn" style="margin-left:auto">Logout</button>
-          </div>
-
-        </div>
-
-        <div class="panel messagesWrap" id="messagesContainer" style="display:none">
-          <div class="chatHeader">
-            <div class="hleft">
-              <div class="avatarSmall" id="miniAvatar">LC</div>
-              <div>
-                <div class="chatTitle">Laikipia Comrades</div>
-                <div class="chatSub">Anonymous community</div>
-              </div>
-            </div>
-            <div style="display:flex;gap:8px;align-items:center">
-              <div class="smallMuted" id="onlineCount">— online</div>
-            </div>
-          </div>
-
-          <div id="messagesList" class="msgs"></div>
-
-          <div class="inputBar">
-            <button class="btnCircle" id="attachBtn" title="Attach image">📎</button>
-            <button class="btnCircle" id="voiceBtn" title="Record audio">🎤</button>
-            <input id="msgInput" type="text" placeholder="Type an anonymous message..." />
-            <button class="btnCircle" id="sendBtn" title="Send">➡️</button>
-            <input type="file" id="fileInput" accept="image/*" style="display:none" />
-          </div>
-        </div>
-
-      </div>
-
     </div>
+
+    <div class="features" aria-hidden="true">
+      <div class="featureCard">
+        <div class="featureLeft">
+          <div class="featureIcon">💬</div>
+          <div>
+            <div class="featureLabel">100% Anonymous</div>
+            <div class="featureSub">No usernames or emails shown with messages</div>
+          </div>
+        </div>
+        <div style="opacity:0.9">→</div>
+      </div>
+
+      <div class="featureCard">
+        <div class="featureLeft">
+          <div class="featureIcon">🏫</div>
+          <div>
+            <div class="featureLabel">University Community</div>
+            <div class="featureSub">Built for your campus, keep it respectful</div>
+          </div>
+        </div>
+        <div style="opacity:0.9">→</div>
+      </div>
+
+      <div class="featureCard">
+        <div class="featureLeft">
+          <div class="featureIcon">🔒</div>
+          <div>
+            <div class="featureLabel">Secure</div>
+            <div class="featureSub">Realtime messages via Firebase</div>
+          </div>
+        </div>
+        <div style="opacity:0.9">→</div>
+      </div>
+    </div>
+
+    <div style="margin-top:18px;text-align:center" class="smallMuted">Tip: Use the attach button to send images or the mic for voice messages.</div>
   </div>
 
-<!-- Firebase (kept your imports) -->
+  <!-- RIGHT: auth + chat -->
+  <div class="rightCol">
+    <!-- AUTH -->
+    <div class="authCard" id="authContainer">
+      <div class="notify">
+        <div style="display:flex;gap:12px;align-items:center">
+          <div style="width:38px;height:38px;border-radius:10px;background:linear-gradient(90deg,var(--neon-purple),var(--neon-cyan));display:flex;align-items:center;justify-content:center">🔔</div>
+          <div style="font-weight:700">Enable Notifications</div>
+        </div>
+        <button class="btnGhost" id="enableNotifBtn">Enable</button>
+      </div>
+
+      <div class="authTitle">LAIKIPIA COMRADE</div>
+      <div class="authSmall">Send anonymous message to your fellow comrades.</div>
+      <div class="authSmall" style="margin-bottom:8px"><strong>Your identity is 💯 percent hidden</strong></div>
+
+      <div class="field">
+        <input id="emailInput" type="email" placeholder="Email" autocomplete="username" />
+        <input id="passwordInput" type="password" placeholder="Password" autocomplete="current-password" />
+      </div>
+
+      <div class="rowBtns">
+        <button class="btnPrimary" id="loginBtn">Login</button>
+        <button class="btnGhost" id="registerBtn">Register</button>
+      </div>
+
+      <div class="statusMsg" id="authStatus"></div>
+
+      <div style="display:flex;gap:8px;align-items:center;margin-top:10px">
+        <button class="btnGhost" id="clearMessagesBtn">Clear Messages</button>
+        <button class="btnGhost" id="logoutBtn" style="margin-left:auto">Logout</button>
+      </div>
+    </div>
+
+    <!-- CHAT (golden theme) -->
+    <div class="chatPanel" id="messagesContainer" style="display:none">
+      <div class="chatHeader">
+        <div style="display:flex;gap:12px;align-items:center">
+          <div style="width:44px;height:44px;border-radius:10px;background:linear-gradient(90deg,var(--neon-purple),var(--neon-cyan));display:flex;align-items:center;justify-content:center;font-weight:800;color:#fff" id="miniAvatar">LC</div>
+          <div>
+            <div class="chatTitle">Laikipia Comrades</div>
+            <div class="chatSub">Anonymous community</div>
+          </div>
+        </div>
+        <div class="onlineCount" id="onlineCount">— active</div>
+      </div>
+
+      <div id="messagesList" aria-live="polite"></div>
+
+      <div class="inputBar">
+        <button class="btnRound" id="attachBtn" title="Attach image">📎</button>
+        <button class="btnRound" id="voiceBtn" title="Record audio">🎤</button>
+        <input id="msgInput" type="text" placeholder="Type a message..." />
+        <button class="btnRound" id="sendBtn" title="Send">➡️</button>
+        <input type="file" id="fileInput" accept="image/*" />
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Firebase -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { getDatabase, ref, push, onChildAdded, query, limitToLast, remove } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
-/* ====== PASTE YOUR FIREBASE CONFIG (from earlier) ====== */
+/* ===== YOUR FIREBASE CONFIG =====
+   Replace with your config if you want to use a different project.
+*/
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDxrcdSofjGYjHVihYIFJHOF0VjCQjsKN4",
   authDomain: "laikipia-49112.firebaseapp.com",
@@ -352,17 +269,17 @@ const onlineCount=document.getElementById('onlineCount');
 const miniAvatar=document.getElementById('miniAvatar');
 const logoImg=document.getElementById('logoImg');
 
-/* You can set a logo URL here if you have one */
-logoImg.src = ""; // leave blank or set to '/assets/logo.png'
+/* Optional: set logo image URL */
+logoImg.src = ""; // put path or URL if you have one
 
-/* Random anon name generator (keeps the style) */
+/* Anon name generator */
 function generateAnonName(){
   const w1=["Silver","Blue","Golden","Silent","Rapid","Misty","Shadow","Bright","Wild","Crimson"];
   const w2=["Falcon","Leaf","River","Lion","Wolf","Star","Cloud","Hawk","Dune","Comet"];
   return w1[Math.floor(Math.random()*w1.length)] + ' ' + w2[Math.floor(Math.random()*w2.length)];
 }
 
-/* ===== AUTH ===== */
+/* AUTH functions */
 async function register(){
   authStatus.textContent='';
   try{
@@ -387,46 +304,48 @@ async function login(){
 }
 
 function showMessages(){
-  authContainer.style.display='none';
+  document.getElementById('authContainer').style.display='none';
   messagesContainer.style.display='flex';
 }
 
-/* ===== REaltime listener (last 100) ===== */
+/* REaltime listener for messages (keep old bubble formatting) */
 const messagesRef = query(ref(db,'messages'), limitToLast(100));
 onChildAdded(messagesRef, snapshot=>{
   const msg = snapshot.val();
   if(!msg) return;
-  const div = document.createElement('div');
-  div.className = 'msg ' + (msg.uid === auth.currentUser?.uid ? 'mine' : '');
-  const sender = document.createElement('div');
-  sender.className='sender';
-  sender.textContent = msg.anonName || 'Anonymous';
-  div.appendChild(sender);
 
-  const content = document.createElement('div');
-  content.className='content';
+  const div = document.createElement('div');
+  div.className = 'messageBubble ' + (msg.uid === auth.currentUser?.uid ? 'messageMine' : 'messageOther');
+
+  const senderEl = document.createElement('div');
+  senderEl.className = 'senderName';
+  senderEl.textContent = msg.anonName || 'Anonymous';
+  div.appendChild(senderEl);
+
+  const contentEl = document.createElement('div');
+  contentEl.className = 'messageContent';
 
   if(msg.type === 'image'){
     const img = document.createElement('img');
     img.src = msg.imageData;
     img.style.maxWidth='260px';
-    img.style.borderRadius='10px';
-    content.appendChild(img);
+    img.style.borderRadius='12px';
+    contentEl.appendChild(img);
   } else if(msg.type === 'audio'){
     const audio = document.createElement('audio');
     audio.controls = true;
     audio.src = msg.audioData;
-    content.appendChild(audio);
+    contentEl.appendChild(audio);
   } else {
-    content.textContent = msg.text || '';
+    contentEl.textContent = msg.text || '';
   }
 
-  div.appendChild(content);
+  div.appendChild(contentEl);
   messagesList.appendChild(div);
   messagesList.scrollTop = messagesList.scrollHeight;
 });
 
-/* ===== SEND TEXT ===== */
+/* SEND TEXT */
 sendBtn.onclick = async () => {
   const text = msgInput.value.trim();
   if(!text) return;
@@ -441,7 +360,7 @@ sendBtn.onclick = async () => {
   msgInput.value='';
 };
 
-/* ===== IMAGE ===== */
+/* IMAGE upload */
 attachBtn.onclick = () => fileInput.click();
 fileInput.onchange = () => {
   const file = fileInput.files[0];
@@ -461,7 +380,7 @@ fileInput.onchange = () => {
   reader.readAsDataURL(file);
 };
 
-/* ===== AUDIO RECORDING ===== */
+/* AUDIO recording */
 let mediaRecorder = null;
 let audioChunks = [];
 voiceBtn.onclick = async () => {
@@ -497,12 +416,10 @@ voiceBtn.onclick = async () => {
   }
 };
 
-/* ===== LOGOUT ===== */
-logoutBtn.onclick = () => signOut(auth).then(()=>{
-  location.reload();
-});
+/* LOGOUT */
+logoutBtn.onclick = () => signOut(auth).then(()=>location.reload());
 
-/* ===== CLEAR MESSAGES ===== */
+/* CLEAR MESSAGES (admin) */
 clearMessagesBtn.onclick = async () => {
   if(confirm('Delete ALL messages permanently?')){
     await remove(ref(db,'messages'));
@@ -510,12 +427,12 @@ clearMessagesBtn.onclick = async () => {
   }
 };
 
-/* ===== ENABLE NOTIFICATIONS (simple request only) ===== */
+/* ENABLE BROWSER NOTIFICATIONS (permission only) */
 enableNotifBtn.onclick = async () => {
   if('Notification' in window){
     const perm = await Notification.requestPermission();
     if(perm === 'granted'){
-      alert('Notifications enabled (browser-level). Implement FCM to receive push notifications.');
+      alert('Notifications enabled (browser-level). To receive push notifications you must integrate FCM server-side.');
     } else {
       alert('Notifications blocked or dismissed.');
     }
@@ -524,26 +441,25 @@ enableNotifBtn.onclick = async () => {
   }
 };
 
-/* ===== ON AUTH STATE ===== */
+/* ON AUTH CHANGE */
 onAuthStateChanged(auth, user => {
   if(user){
     showMessages();
     miniAvatar.textContent = (user.displayName || 'LC').split(' ').map(s=>s[0]).slice(0,2).join('').toUpperCase();
-    // if no displayName (e.g. imported user) set one
     if(!user.displayName){
       const anonName = generateAnonName();
       updateProfile(user,{displayName:anonName}).catch(()=>{});
     }
   } else {
-    authContainer.style.display='block';
+    document.getElementById('authContainer').style.display='block';
     messagesContainer.style.display='none';
   }
 });
 
-/* ===== quick online count (very lightweight: counts messages authors seen in list) ===== */
+/* simple online/active count based on distinct anonName authors seen */
 const authors = new Set();
 onChildAdded(query(ref(db,'messages'), limitToLast(200)), snap=>{
-  const m=snap.val();
+  const m = snap.val();
   if(m && m.anonName) authors.add(m.anonName);
   onlineCount.textContent = `${authors.size} active`;
 });
