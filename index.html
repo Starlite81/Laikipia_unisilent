@@ -20,7 +20,7 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
 #logoDiv{background:linear-gradient(90deg,#D4AF37,#a78123);padding:16px;text-align:center;color:#111;font-weight:700;font-size:20px;}
 #chatHeader{display:flex;justify-content:flex-end;padding:8px 16px;}
 #logoutBtn{padding:8px 12px;border-radius:8px;border:none;background:white;cursor:pointer;font-weight:700;color:#111;}
-#messagesList{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;max-height:350px;}
+#messagesList{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;max-height:300px;}
 
 .messageBubble{padding:12px;border-radius:16px;max-width:70%;box-shadow:0 2px 8px rgba(0,0,0,0.1);word-wrap:break-word;}
 .messageMine{background:linear-gradient(180deg,#fff7e6,#fff5df);align-self:flex-end;border-bottom-right-radius:4px;}
@@ -74,7 +74,7 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
     <input type="file" id="fileInput" accept="image/*" style="display:none;" />
   </div>
 
-  <!-- Anonymous DM Input with dynamic recipient -->
+  <!-- Anonymous DM Input -->
   <div id="dmBar">
     <select id="dmRecipient">
       <option value="" disabled selected>Select recipient</option>
@@ -285,30 +285,36 @@ dmSendBtn.onclick = async ()=>{
   dmRecipient.selectedIndex = 0;
 };
 
-// --- Load My DMs ---
+// --- Real-time DM Panel ---
 function loadMyDMs(){
   dmList.innerHTML='';
   if(!auth.currentUser) return;
   const uid = auth.currentUser.uid;
   const privateRef = ref(db,'privateMessages');
-  onChildAdded(privateRef, snapshot=>{
+
+  onChildAdded(privateRef, snapshot => {
     const chat = snapshot.val();
     const chatId = snapshot.key;
+
     if(chatId.includes(uid)){
       for(const msgId in chat){
         const msg = chat[msgId];
-        if(msg.uid !== uid){ // show only received DMs
-          const div = document.createElement('div');
-          div.className='dmMessage';
-          const sender = document.createElement('div');
-          sender.className='dmSender';
-          sender.textContent=msg.anonName||'Anonymous';
-          const content = document.createElement('div');
-          content.className='dmContent';
-          content.textContent=msg.text||'';
-          div.appendChild(sender);
-          div.appendChild(content);
-          dmList.appendChild(div);
+        if(msg.uid !== uid){ // received messages only
+          if(!document.getElementById(msgId)){
+            const div = document.createElement('div');
+            div.className='dmMessage';
+            div.id = msgId;
+            const sender = document.createElement('div');
+            sender.className='dmSender';
+            sender.textContent = msg.anonName || 'Anonymous';
+            const content = document.createElement('div');
+            content.className='dmContent';
+            content.textContent = msg.text || '';
+            div.appendChild(sender);
+            div.appendChild(content);
+            dmList.appendChild(div);
+            dmList.scrollTop = dmList.scrollHeight;
+          }
         }
       }
     }
