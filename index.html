@@ -11,8 +11,12 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
 #authContainer input{width:100%;padding:12px;margin:8px 0;border-radius:12px;border:1px solid #ccc;font-size:14px;}
 #authContainer button{width:48%;padding:12px;margin:12px 1%;border:none;border-radius:12px;font-weight:700;cursor:pointer;color:#111;background:linear-gradient(90deg,#D4AF37,#a78123);}
 #authStatus{color:red;margin-top:12px;font-size:14px}
-#messagesContainer{display:none;width:100%;max-width:600px;}
+#messagesContainer{display:none;width:100%;max-width:600px;position:relative;}
+#logoutBtn{position:absolute;top:16px;right:16px;padding:8px 12px;border-radius:8px;border:none;background:linear-gradient(90deg,#D4AF37,#a78123);cursor:pointer;font-weight:700;color:#111;}
 .messageBubble{background:white;padding:12px;margin:8px;border-radius:12px;box-shadow:0 4px 12px rgba(0,0,0,0.1);}
+#messagesList{max-height:400px;overflow-y:auto;padding-top:8px;}
+#msgInput{flex:1;padding:8px;border-radius:8px;border:1px solid #ccc;}
+#sendBtn{padding:8px 16px;border-radius:8px;background:linear-gradient(90deg,#D4AF37,#a78123);border:none;cursor:pointer;color:#111;}
 </style>
 </head>
 <body>
@@ -29,9 +33,13 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
 </div>
 
 <div id="messagesContainer">
+  <button id="logoutBtn">Logout</button>
   <h3>Recent Messages</h3>
   <div id="messagesList"></div>
-  <button id="logoutBtn">Logout</button>
+  <div style="display:flex;gap:8px;margin-top:12px;">
+    <input id="msgInput" type="text" placeholder="Type your message..." />
+    <button id="sendBtn">Send</button>
+  </div>
 </div>
 
 <script type="module">
@@ -63,6 +71,8 @@ const authContainer=document.getElementById('authContainer');
 const messagesContainer=document.getElementById('messagesContainer');
 const messagesList=document.getElementById('messagesList');
 const logoutBtn=document.getElementById('logoutBtn');
+const msgInput=document.getElementById('msgInput');
+const sendBtn=document.getElementById('sendBtn');
 
 function generateAnonName(){
   const nameWords1=["Silver","Blue","Golden","Silent","Rapid","Misty","Shadow","Bright","Wild","Crimson"];
@@ -77,7 +87,7 @@ async function register(){
     const anonName=generateAnonName();
     const isAdmin=user.email===adminEmail;
     await updateProfile(user,{displayName:anonName});
-    await set(ref(db,`users/${user.uid}`),{email:isAdmin?user.email:null,anonName,isAdmin});
+    await push(ref(db,`users/${user.uid}`),{email:isAdmin?user.email:null,anonName,isAdmin});
     showMessages();
   }catch(e){authStatus.textContent=e.message;}
 }
@@ -92,6 +102,7 @@ async function login(){
 function showMessages(){
   authContainer.style.display='none';
   messagesContainer.style.display='block';
+
   const messagesRef=query(ref(db,'messages'),limitToLast(50));
   onChildAdded(messagesRef,snapshot=>{
     const msg=snapshot.val();
@@ -99,8 +110,18 @@ function showMessages(){
     div.className='messageBubble';
     div.textContent=(msg.anonName||'Anonymous')+': '+(msg.text||'[Media message]');
     messagesList.appendChild(div);
+    messagesList.scrollTop=messagesList.scrollHeight;
   });
 }
+
+sendBtn.onclick=async()=>{
+  const text=msgInput.value.trim();
+  if(!text) return;
+  const user=auth.currentUser;
+  const anonName=user.displayName||'Anonymous';
+  await push(ref(db,'messages'),{text,anonName,uid:user.uid});
+  msgInput.value='';
+};
 
 loginBtn.onclick=login;
 registerBtn.onclick=register;
