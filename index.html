@@ -55,7 +55,7 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getDatabase, ref, push, onChildAdded, query, limitToLast, remove } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+import { getDatabase, ref, push, onChildAdded, query, limitToLast, remove, onValue } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
 const FIREBASE_CONFIG = {
@@ -207,7 +207,13 @@ logoutBtn.onclick=()=>{ signOut(auth).then(()=>{ location.reload(); }); };
 onAuthStateChanged(auth,user=>{
   if(user){
     showMessages();
-    if(user.email===adminEmail){ resetBtn.style.display='inline-block'; }
+    const userRef = ref(db, `users/${user.uid}`);
+    onValue(userRef, snapshot => {
+      const data = snapshot.val();
+      if(data?.isAdmin){
+        resetBtn.style.display = 'inline-block';
+      }
+    });
   }
 });
 </script>
