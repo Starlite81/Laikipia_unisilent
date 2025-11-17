@@ -4,6 +4,11 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
 <title>Laikipia Anonymous Chatroom</title>
+
+<!-- PWA Manifest -->
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#D4AF37">
+
 <style>
 body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gradient(180deg,#fffaf0,#fff9ed);display:flex;justify-content:center;align-items:flex-start;min-height:100vh;}
 #authContainer{background:white;padding:40px;border-radius:16px;box-shadow:0 8px 24px rgba(0,0,0,0.15);width:320px;text-align:center;margin-top:40px;}
@@ -197,6 +202,15 @@ registerBtn.onclick=register;
 logoutBtn.onclick=()=>{ signOut(auth).then(()=>{ location.reload(); }); };
 
 onAuthStateChanged(auth,user=>{ if(user){ showMessages(); } });
+
+// --- PWA Service Worker Registration ---
+if('serviceWorker' in navigator){
+  window.addEventListener('load',()=>{
+    navigator.serviceWorker.register('service-worker.js')
+      .then(reg=>console.log('Service Worker registered', reg))
+      .catch(err=>console.error('Service Worker failed',err));
+  });
+}
 </script>
 </body>
 </html>
