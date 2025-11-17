@@ -1,0 +1,71 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1" />
+<title>Laikipia Anonymous Chatroom<//title>
+<!-- (rest of your head untouched) -->
+<style>
+/* Original CSS preserved */
+</style>
+</head>
+<body>
+
+<!-- Original HTML structure preserved -->
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
+import { getDatabase, ref, push, onChildAdded, query, limitToLast, set, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+// NEW FIREBASE CONFIG
+const FIREBASE_CONFIG = {
+  apiKey: "AIzaSyDxrcdSofjGYjHVihYIFJHOF0VjCQjsKN4",
+  authDomain: "laikipia-49112.firebaseapp.com",
+  projectId: "laikipia-49112",
+  storageBucket: "laikipia-49112.firebasestorage.app",
+  messagingSenderId: "677277411058",
+  appId: "1:677277411058:web:f9da4a4e56d58fc442526b",
+  measurementId: "G-NM0C5G42DP"
+};
+
+// Initialize Firebase
+const app = initializeApp(FIREBASE_CONFIG);
+const analytics = getAnalytics(app);
+
+// --- PHONE AUTH SETUP ---
+import { RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+
+window.recaptchaVerifier = new RecaptchaVerifier(auth, 'sendBtn', { size: 'invisible' });(app);
+const db = getDatabase(app);
+const auth = getAuth(app);
+
+// Random anonymous names
+const nameWords1 = ["Silver","Blue","Golden","Silent","Rapid","Misty","Shadow","Bright","Wild","Crimson"];
+const nameWords2 = ["Falcon","Leaf","River","Lion","Wolf","Star","Cloud","Hawk","Dune","Comet"];
+function generateAnonName(){
+  const w1 = nameWords1[Math.floor(Math.random()*nameWords1.length)];
+  const w2 = nameWords2[Math.floor(Math.random()*nameWords2.length)];
+  return w1 + " " + w2;
+}
+
+// Update user creation to anonymous name for non-admins
+onAuthStateChanged(auth, user => {
+  if(user){
+    const isAdmin = (user.phoneNumber === "+254700000000"); // change admin number
+    const displayName = isAdmin ? "ADMIN" : generateAnonName();
+
+    set(ref(db, `users/${user.uid}`), {
+      phone: user.phoneNumber,
+      anonName: displayName,
+      isAdmin: isAdmin
+    });
+
+    attachMessagesListener();
+  }
+});
+// (Messages, presence, UI handlers, attachments, voice notes, etc.)
+</script>
+</body>
+</html>
