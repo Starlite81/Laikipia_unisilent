@@ -3,23 +3,33 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1" />
-<title>Laikipia Anonymous Chatroom<//title>
-<!-- (rest of your head untouched) -->
+<title>Laikipia Anonymous Chatroom</title>
 <style>
 /* Original CSS preserved */
 </style>
 </head>
 <body>
 
-<!-- Original HTML structure preserved -->
+<div id="authContainer">
+  <h2>Login / Register</h2>
+  <input type="email" id="emailInput" placeholder="Email" />
+  <input type="password" id="passwordInput" placeholder="Password" />
+  <button id="loginBtn">Login</button>
+  <button id="registerBtn">Register</button>
+  <div id="authStatus"></div>
+</div>
+
+<div id="chatContainer" style="display:none">
+  <!-- Original chat HTML structure preserved -->
+</div>
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
 import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-analytics.js";
 import { getDatabase, ref, push, onChildAdded, query, limitToLast, set, onValue, onDisconnect } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
-import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
-// NEW FIREBASE CONFIG
+// Firebase config
 const FIREBASE_CONFIG = {
   apiKey: "AIzaSyDxrcdSofjGYjHVihYIFJHOF0VjCQjsKN4",
   authDomain: "laikipia-49112.firebaseapp.com",
@@ -30,18 +40,12 @@ const FIREBASE_CONFIG = {
   measurementId: "G-NM0C5G42DP"
 };
 
-// Initialize Firebase
 const app = initializeApp(FIREBASE_CONFIG);
 const analytics = getAnalytics(app);
-
-// --- PHONE AUTH SETUP ---
-import { RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
-
-window.recaptchaVerifier = new RecaptchaVerifier(auth, 'sendBtn', { size: 'invisible' });(app);
 const db = getDatabase(app);
 const auth = getAuth(app);
 
-// Random anonymous names
+// Anonymous name generator
 const nameWords1 = ["Silver","Blue","Golden","Silent","Rapid","Misty","Shadow","Bright","Wild","Crimson"];
 const nameWords2 = ["Falcon","Leaf","River","Lion","Wolf","Star","Cloud","Hawk","Dune","Comet"];
 function generateAnonName(){
@@ -50,22 +54,58 @@ function generateAnonName(){
   return w1 + " " + w2;
 }
 
-// Update user creation to anonymous name for non-admins
+// Admin email
+const adminEmail = "admin@laikipia.ac.ke";
+
+// AUTH HANDLERS
+const loginBtn = document.getElementById('loginBtn');
+const registerBtn = document.getElementById('registerBtn');
+const emailInput = document.getElementById('emailInput');
+const passwordInput = document.getElementById('passwordInput');
+const authStatus = document.getElementById('authStatus');
+const authContainer = document.getElementById('authContainer');
+const chatContainer = document.getElementById('chatContainer');
+
+async function register(){
+  try{
+    const userCredential = await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+    const user = userCredential.user;
+    const anonName = generateAnonName();
+    const isAdmin = user.email === adminEmail;
+    await updateProfile(user, { displayName: anonName });
+    await set(ref(db, `users/${user.uid}`), { email: isAdmin ? user.email : null, anonName, isAdmin });
+    authContainer.style.display='none';
+    chatContainer.style.display='block';
+  }catch(e){ authStatus.textContent = e.message; }
+}
+
+async function login(){
+  try{
+    const userCredential = await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
+    const user = userCredential.user;
+    authContainer.style.display='none';
+    chatContainer.style.display='block';
+  }catch(e){ authStatus.textContent = e.message; }
+}
+
+registerBtn.onclick = register;
+loginBtn.onclick = login;
+
+// AUTH STATE LISTENER
 onAuthStateChanged(auth, user => {
   if(user){
-    const isAdmin = (user.phoneNumber === "+254700000000"); // change admin number
-    const displayName = isAdmin ? "ADMIN" : generateAnonName();
-
-    set(ref(db, `users/${user.uid}`), {
-      phone: user.phoneNumber,
-      anonName: displayName,
-      isAdmin: isAdmin
-    });
-
-    attachMessagesListener();
+    authContainer.style.display='none';
+    chatContainer.style.display='block';
+  } else {
+    authContainer.style.display='block';
+    chatContainer.style.display='none';
   }
 });
-// (Messages, presence, UI handlers, attachments, voice notes, etc.)
+
+// CHAT LOGIC (messages, presence, attachments, voice notes, etc.)
+// All user emails hidden except admin can read them
+// Attach your existing chat message functions here, using user.displayName for anonymity
+
 </script>
 </body>
 </html>
