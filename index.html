@@ -20,7 +20,7 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
 #logoDiv{background:linear-gradient(90deg,#D4AF37,#a78123);padding:16px;text-align:center;color:#111;font-weight:700;font-size:20px;}
 #chatHeader{display:flex;justify-content:flex-end;padding:8px 16px;}
 #logoutBtn{padding:8px 12px;border-radius:8px;border:none;background:white;cursor:pointer;font-weight:700;color:#111;}
-#messagesList{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;}
+#messagesList{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;max-height:350px;}
 
 .messageBubble{padding:12px;border-radius:16px;max-width:70%;box-shadow:0 2px 8px rgba(0,0,0,0.1);word-wrap:break-word;}
 .messageMine{background:linear-gradient(180deg,#fff7e6,#fff5df);align-self:flex-end;border-bottom-right-radius:4px;}
@@ -37,6 +37,12 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
 #dmRecipient{padding:10px;border-radius:20px;border:1px solid #ccc;outline:none;}
 #dmInput{flex:1;padding:10px;border-radius:20px;border:1px solid #ccc;outline:none;}
 #dmSendBtn{padding:10px 16px;border-radius:20px;background:#a78123;border:none;cursor:pointer;color:#111;font-weight:700;}
+
+#dmPanel{margin-top:12px;border-top:1px solid #ccc;padding-top:8px;}
+#dmPanel h3{margin:0 0 8px 0;font-size:14px;color:#2b6cb0;}
+.dmMessage{padding:8px;border-radius:12px;background:#f7f7f7;margin-bottom:6px;}
+.dmSender{font-size:12px;font-weight:600;color:#555;margin-bottom:2px;}
+.dmContent{font-size:14px;color:#111;}
 </style>
 </head>
 <body>
@@ -75,6 +81,12 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
     </select>
     <input id="dmInput" type="text" placeholder="Send an anonymous DM..." />
     <button id="dmSendBtn">Send DM</button>
+  </div>
+
+  <!-- DM Panel -->
+  <div id="dmPanel">
+    <h3>My Anonymous DMs</h3>
+    <div id="dmList"></div>
   </div>
 </div>
 
@@ -116,6 +128,7 @@ const voiceBtn=document.getElementById('voiceBtn');
 const dmInput = document.getElementById('dmInput');
 const dmSendBtn = document.getElementById('dmSendBtn');
 const dmRecipient = document.getElementById('dmRecipient');
+const dmList = document.getElementById('dmList');
 
 let mediaRecorder=null;
 let audioChunks=[];
@@ -129,22 +142,22 @@ function generateAnonName(){
 // --- Auth ---
 async function register(){
   try{
-    const userCredential=await createUserWithEmailAndPassword(auth,emailInput.value,passwordInput.value);
-    const user=userCredential.user;
-    const anonName=generateAnonName();
-    await updateProfile(user,{displayName:anonName});
-    await push(ref(db,`users/${user.uid}`),{anonName});
+    const userCredential = await createUserWithEmailAndPassword(auth,emailInput.value,passwordInput.value);
+    const user = userCredential.user;
+    const anonName = generateAnonName();
+    await updateProfile(user, { displayName: anonName });
+    await push(ref(db, `users/${user.uid}`), { anonName });
     showMessages();
-    loadUsers();
-  }catch(e){authStatus.textContent=e.message;}
+    setTimeout(loadUsers,500);
+  } catch(e) { authStatus.textContent = e.message; }
 }
 
 async function login(){
   try{
     await signInWithEmailAndPassword(auth,emailInput.value,passwordInput.value);
     showMessages();
-    loadUsers();
-  }catch(e){authStatus.textContent=e.message;}
+    setTimeout(loadUsers,500);
+  } catch(e) { authStatus.textContent = e.message; }
 }
 
 function showMessages(){
@@ -158,13 +171,11 @@ function showMessages(){
     const div=document.createElement('div');
     div.className='messageBubble '+(msg.uid===auth.currentUser.uid?'messageMine':'messageOther');
 
-    // Sender name
     const senderEl=document.createElement('div');
     senderEl.className='senderName';
     senderEl.textContent = msg.anonName || 'Anonymous';
     div.appendChild(senderEl);
 
-    // Message content
     const contentEl=document.createElement('div');
     contentEl.className='messageContent';
 
@@ -240,10 +251,10 @@ voiceBtn.onclick=async()=>{
 function loadUsers(){
   dmRecipient.innerHTML = '<option value="" disabled selected>Select recipient</option>';
   const usersRef = ref(db,'users');
-  onChildAdded(usersRef, snapshot => {
-    const user = snapshot.val();
+  onChildAdded(usersRef, snapshot=>{
     const uid = snapshot.key;
-    if(uid !== auth.currentUser.uid){
+    const user = snapshot.val();
+    if(auth.currentUser && uid !== auth.currentUser.uid){
       const option = document.createElement('option');
       option.value = uid;
       option.textContent = user.anonName || 'Anonymous';
@@ -274,11 +285,47 @@ dmSendBtn.onclick = async ()=>{
   dmRecipient.selectedIndex = 0;
 };
 
+// --- Load My DMs ---
+function loadMyDMs(){
+  dmList.innerHTML='';
+  if(!auth.currentUser) return;
+  const uid = auth.currentUser.uid;
+  const privateRef = ref(db,'privateMessages');
+  onChildAdded(privateRef, snapshot=>{
+    const chat = snapshot.val();
+    const chatId = snapshot.key;
+    if(chatId.includes(uid)){
+      for(const msgId in chat){
+        const msg = chat[msgId];
+        if(msg.uid !== uid){ // show only received DMs
+          const div = document.createElement('div');
+          div.className='dmMessage';
+          const sender = document.createElement('div');
+          sender.className='dmSender';
+          sender.textContent=msg.anonName||'Anonymous';
+          const content = document.createElement('div');
+          content.className='dmContent';
+          content.textContent=msg.text||'';
+          div.appendChild(sender);
+          div.appendChild(content);
+          dmList.appendChild(div);
+        }
+      }
+    }
+  });
+}
+
 // --- Auth Events ---
 loginBtn.onclick=login;
 registerBtn.onclick=register;
 logoutBtn.onclick=()=>{ signOut(auth).then(()=>{ location.reload(); }); };
-onAuthStateChanged(auth,user=>{ if(user){ showMessages(); loadUsers(); } });
+onAuthStateChanged(auth,user=>{
+  if(user){
+    showMessages();
+    loadUsers();
+    loadMyDMs();
+  }
+});
 
 // --- PWA Service Worker ---
 if('serviceWorker' in navigator){
