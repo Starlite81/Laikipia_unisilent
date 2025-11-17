@@ -13,16 +13,15 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
 #authStatus{color:red;margin-top:12px;font-size:14px}
 #messagesContainer{display:none;width:100%;max-width:400px;flex-direction:column;border-radius:16px;overflow:hidden;box-shadow:0 8px 24px rgba(0,0,0,0.15);background:white;}
 #logoDiv{background:linear-gradient(90deg,#D4AF37,#a78123);padding:16px;text-align:center;color:#111;font-weight:700;font-size:20px;}
-#chatHeader{display:flex;justify-content:flex-end;padding:8px 16px;}
-#logoutBtn{padding:8px 12px;border-radius:8px;border:none;background:white;cursor:pointer;font-weight:700;color:#111;}
+#chatHeader{display:flex;justify-content:space-between;padding:8px 16px;}
+#logoutBtn,#resetBtn{padding:8px 12px;border-radius:8px;border:none;background:white;cursor:pointer;font-weight:700;color:#111;}
 #messagesList{flex:1;overflow-y:auto;padding:16px;display:flex;flex-direction:column;gap:8px;}
 .messageBubble{padding:12px;border-radius:16px;max-width:70%;box-shadow:0 2px 8px rgba(0,0,0,0.1);word-wrap:break-word;}
 .messageMine{background:linear-gradient(180deg,#fff7e6,#fff5df);align-self:flex-end;border-bottom-right-radius:4px;}
 .messageOther{background:#ffffff;align-self:flex-start;border-bottom-left-radius:4px;}
 #inputBar{display:flex;padding:8px;gap:8px;border-top:1px solid #eee;}
 #msgInput{flex:1;padding:10px;border-radius:20px;border:1px solid #ccc;outline:none;}
-#sendBtn{padding:10px 16px;border-radius:20px;background:linear-gradient(90deg,#D4AF37,#a78123);border:none;cursor:pointer;color:#111;font-weight:700;}
-#attachBtn,#voiceBtn{padding:10px;border-radius:50%;border:none;cursor:pointer;font-size:18px;background:linear-gradient(90deg,#D4AF37,#a78123);color:#111;}
+#sendBtn,#attachBtn,#voiceBtn{padding:10px;border-radius:50%;border:none;cursor:pointer;font-size:18px;background:linear-gradient(90deg,#D4AF37,#a78123);color:#111;}
 </style>
 </head>
 <body>
@@ -42,6 +41,7 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
   <div id="logoDiv">Laikipia Anonymous Chatroom</div>
   <div id="chatHeader">
     <button id="logoutBtn">Logout</button>
+    <button id="resetBtn" style="display:none;">Reset All</button>
   </div>
   <div id="messagesList"></div>
   <div id="inputBar">
@@ -55,7 +55,7 @@ body{margin:0;font-family:Inter,system-ui,Arial,sans-serif;background:linear-gra
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-app.js";
-import { getDatabase, ref, push, onChildAdded, query, limitToLast } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
+import { getDatabase, ref, push, onChildAdded, query, limitToLast, remove } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-database.js";
 import { getAuth, onAuthStateChanged, signOut, createUserWithEmailAndPassword, signInWithEmailAndPassword, updateProfile } from "https://www.gstatic.com/firebasejs/12.6.0/firebase-auth.js";
 
 const FIREBASE_CONFIG = {
@@ -82,6 +82,7 @@ const authContainer=document.getElementById('authContainer');
 const messagesContainer=document.getElementById('messagesContainer');
 const messagesList=document.getElementById('messagesList');
 const logoutBtn=document.getElementById('logoutBtn');
+const resetBtn=document.getElementById('resetBtn');
 const msgInput=document.getElementById('msgInput');
 const sendBtn=document.getElementById('sendBtn');
 const attachBtn=document.getElementById('attachBtn');
@@ -192,11 +193,23 @@ voiceBtn.onclick=async()=>{
   }
 };
 
+resetBtn.onclick=async()=>{
+  if(confirm('Are you sure you want to delete all messages?')){
+    await remove(ref(db,'messages'));
+    messagesList.innerHTML='';
+  }
+};
+
 loginBtn.onclick=login;
 registerBtn.onclick=register;
 logoutBtn.onclick=()=>{ signOut(auth).then(()=>{ location.reload(); }); };
 
-onAuthStateChanged(auth,user=>{ if(user){ showMessages(); } });
+onAuthStateChanged(auth,user=>{
+  if(user){
+    showMessages();
+    if(user.email===adminEmail){ resetBtn.style.display='inline-block'; }
+  }
+});
 </script>
 </body>
 </html>
